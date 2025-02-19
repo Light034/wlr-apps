@@ -34,8 +34,8 @@ ext_toplevel_public_code = custom_target(
 add_project_arguments(['-DWLR_USE_UNSTABLE'], language: ['cpp', 'c'])
 
 # Executable
-executable('wf-getapps',
-  ['src/wf-getapps.cpp', ext_toplevel_public_code, ext_toplevel_client_header],
+executable('wlr-apps',
+  ['src/wlr-apps.cpp', ext_toplevel_public_code, ext_toplevel_client_header],
   dependencies : [wayland_dep, gtkmm_dep, jsoncpp_dep, wlr_protocols_dep],
   install : true,
   include_directories : [include_directories('.','src')],
