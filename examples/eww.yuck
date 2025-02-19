@@ -1,0 +1,43 @@
+(deflisten wlr_apps :initial "[]" "$PATH_TO_YOUR_PROGRAM/wf-getapps --follow")
+
+(defwindow bar []
+    :monitor "0"
+    :geometry (geometry 
+        :width "0%"
+        :height "0%"
+        :anchor "bottom center"
+    )
+    :exclusive true
+    :namespace "eww"
+    (bar)
+)
+
+(defwidget bar []
+    (box 
+        :class "bar-widget"
+        :orientation "h"
+        :space-evenly true
+        (box 
+            :orientation "h"
+            :space-evenly false
+            :halign "center"
+            (taskbar)
+        )
+    )
+    
+)
+
+(defwidget taskbar []
+    (box 
+        :orientation "h"
+        :space-evenly false 
+        :spacing 5 
+        :class "taskbar"
+        (for app in {wlr_apps}
+            (button :class "app_item ${app.active == true ? "active" : ""}" 
+                    :onclick "wlrctl toplevel focus title:\"${app.title}\""
+                (image :path {app.icon_path} :image-width 32 :image-height 32)
+            )
+        )
+    )
+)
