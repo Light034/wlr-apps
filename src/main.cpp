@@ -5,8 +5,8 @@
 #include "wayland_context.hpp"
 #include "helpers.hpp"
 #include "callbacks.hpp"
-#include <gtkmm/application.h>
-#include <gtkmm/icontheme.h>
+//#include <gtkmm/application.h>
+//#include <gtkmm/icontheme.h>
 
 // Define the global context.
 WaylandContext g_ctx;
@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     });
 
     // Initialize GTK before connecting to Wayland.
-    auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
+    //auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
 
     // Parse command-line arguments.
     for (int i = 1; i < argc; i++) {

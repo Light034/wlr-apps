@@ -4,8 +4,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <json/json.h>
-#include <gtkmm/application.h>
-#include <gtkmm/icontheme.h>
+//#include <gtkmm/application.h>
+//#include <gtkmm/icontheme.h>
 
 // Flush pending deletions.
 void flush_pending_deletions() {
@@ -21,10 +21,23 @@ void print_toplevel_info() {
     for (const auto &info : g_ctx.toplevels) {
         if (!info || info->closed) continue;
         Json::Value toplevel_json;
-        toplevel_json["app_id"] = info->app_id;
+
+        // This converts the app_id into lowercase, Gtk doesn't seem to handle
+        // uppercase app names when looking up icons.
+        std::string app_id_lower = info->app_id;
+        std::transform(app_id_lower.begin(),
+        app_id_lower.end(),
+        app_id_lower.begin(),
+        ::tolower);
+        toplevel_json["app_id"] = app_id_lower;
+
         toplevel_json["title"] = info->title;
         toplevel_json["active"] = info->active;
-        toplevel_json["icon_path"] = info->icon_path;
+
+        // To be deprecated, eww css uses gtk css which allows looking up icons
+        // natively, I will keep the code here in case it's needed but it will no longer be used.
+        //toplevel_json["icon_path"] = info->icon_path;
+
         if (info->parent) {
             toplevel_json["parent_app_id"] = "unknown";
             for(const auto& other_info : g_ctx.toplevels) {
@@ -42,6 +55,7 @@ void print_toplevel_info() {
 }
 
 // Gathers the gtk icon using the theme that is set by gtk.
+/* Deprecated function, will be removed in a future version
 std::string get_icon_path(const std::string &app_id) {
     // If the app_id is empty then it returns an empty string.
     if (app_id.empty()) {
@@ -92,7 +106,7 @@ std::string get_icon_path(const std::string &app_id) {
         << '\n';
     }
     return ""; // Return empty string on failure, probably need to add fallback.
-}
+} */
 
 // Update the title when it gets updated.
 void update_title(ToplevelInfo *info, const std::string &title) {
@@ -104,5 +118,7 @@ void update_title(ToplevelInfo *info, const std::string &title) {
 void update_app_id(ToplevelInfo *info, const std::string &app_id) {
     if (!info || info->closed) return;
     info->app_id = app_id;
-    info->icon_path = get_icon_path(info->app_id);
+
+    // Deprecated, uncomment if needed.
+    //info->icon_path = get_icon_path(info->app_id);
 }

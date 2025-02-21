@@ -9,7 +9,7 @@ void flush_pending_deletions();
 void print_toplevel_info();
 
 // Returns the icon path for the given app_id.
-std::string get_icon_path(const std::string &app_id);
+// std::string get_icon_path(const std::string &app_id);
 
 // Update functions.
 void update_title(ToplevelInfo *info, const std::string &title);
