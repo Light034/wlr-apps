@@ -5,7 +5,7 @@ project('wayland-toplevel-info', 'cpp', 'c',
 
 # Dependencies
 wayland_dep = dependency('wayland-client')
-gtkmm_dep = dependency('gtkmm-3.0')
+# gtkmm_dep = dependency('gtkmm-3.0')
 jsoncpp_dep = dependency('jsoncpp')
 wayland_scanner_dep = find_program('wayland-scanner')
 wlr_protocols_dep = dependency('wlr-protocols')
@@ -44,7 +44,7 @@ add_project_arguments(['-DWLR_USE_UNSTABLE'], language: ['cpp', 'c'])
 # Executable
 executable('wlr-apps',
   [sources, ext_toplevel_public_code, ext_toplevel_client_header],
-  dependencies : [wayland_dep, gtkmm_dep, jsoncpp_dep, wlr_protocols_dep],
+  dependencies : [wayland_dep, jsoncpp_dep, wlr_protocols_dep],
   install : true,
   include_directories : inc,
   build_by_default: true
