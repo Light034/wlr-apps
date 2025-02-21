@@ -36,8 +36,7 @@ Contributions, bug reports, and pull requests are very welcomed.
 ## **Dependencies:**
 
   * Wayland client libraries
-  * `wlr-foreign-toplevel-management` protocol client library (typically provided by `wlr-protocols` or similar packages)
-  * GTKmm
+  * `wlr-foreign-toplevel-management` protocol client library (typically provided by `wlr-protocols`)
 
 ## Build:
 To build this program just clone this repository and run:
