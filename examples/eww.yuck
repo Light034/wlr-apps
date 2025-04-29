@@ -39,9 +39,15 @@
                 ;; Highlights the app that is currently active.
                 :class "app_item ${app.active == true ? "active" : ""}" 
                 ;; Functionality to focus app on click, to be expanded.
+
                 :onclick "wlr-apps -x \"f ${app.id}\""
                 ;; Box that holds the css for displaying the icon, it uses built in gtk css from eww.
                 ;; Some apps might not display the icon.
+
+                :onclick "wlrctl toplevel focus title:\"${app.title}\""
+                ;; Box that holds the css for displaying the icon, it uses built in gtk css from eww.
+                ;; Some apps might not display the icon, a fallback will be added in the future to this example.
+
                 ;; You can read more in https://docs.gtk.org/gtk3/css-overview.html.
                 (box :orientation "h" :class "app_image" :css ".app_image {
                     background-image: -gtk-icontheme('${app.app_id}');

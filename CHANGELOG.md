@@ -2,6 +2,7 @@
 
 All changes will be documented here.
 
+Testing
 ## 0.2 (29.04.2025)
 
 ### Changes
@@ -18,6 +19,8 @@ approach to managing and printing information about toplevels.
 - Completely removed any logic that prints gtk icon path, eww already provides this option and it adds a significant performance hit.
 - Made the code a single file, the previous split was to test out how it works, but it made it cumbersome to edit functions. Since the behaviour of this program is fairly simple I decided to revert back to a single file.
 
+=======
+ main
 ## 0.1 (21.02.2025)
 
 ### BREAKING CHANGES
