@@ -1,0 +1,59 @@
+(deflisten wlr_apps :initial "[]" "$PATH_TO_YOUR_PROGRAM/wlr-apps --follow")
+
+(defwindow bar []
+    :monitor "0"
+    :geometry (geometry 
+        :width "0%"
+        :height "0%"
+        :anchor "bottom center"
+    )
+    :exclusive true
+    :namespace "eww"
+    (bar)
+)
+
+(defwidget bar []
+    (box 
+        :class "bar-widget"
+        :orientation "h"
+        :space-evenly true
+        (box 
+            :orientation "h"
+            :space-evenly false
+            :halign "center"
+            (taskbar)
+        )
+    )
+    
+)
+
+(defwidget taskbar []
+    (box 
+        :orientation "h"
+        :space-evenly false 
+        :spacing 5 
+        :class "taskbar"
+        ;; Iterates through the array provided by wlr-apps and creates a button for each app found.
+        (for app in {wlr_apps}
+            (button
+                ;; Highlights the app that is currently active.
+                :class "app_item ${app.active == true ? "active" : ""}" 
+                ;; Functionality to focus app on click, to be expanded.
+                :onclick "wlr-apps -x \"f ${app.id}\""
+                ;; Box that holds the css for displaying the icon, it uses built in gtk css from eww.
+                ;; Some apps might not display the icon.
+                ;; You can read more in https://docs.gtk.org/gtk3/css-overview.html.
+                (box :orientation "h" :class "app_image" :css ".app_image {
+                    background-image: -gtk-icontheme('${app.app_id}');
+                    background-repeat: no-repeat;
+                    background-size: cover;
+                    background-position: center;
+                    min-height: 0rem;
+                    min-width: 2rem;
+                    border-radius: 100%;
+                    }"
+                )
+            )
+        )
+    )
+)
