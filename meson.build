@@ -1,12 +1,19 @@
-project('wayland-toplevel-info', 'cpp', 'c',
+project('wayland-toplevel-info', 'c',
   version : '0.1.0',
   meson_version : '>=0.51.0',
+
+  default_options : ['warning_level=3', 'c_std=c11'])
+
+# Dependencies
+wayland_dep = dependency('wayland-client')
+
   default_options : ['cpp_std=c++20', 'c_std=c11'])
 
 # Dependencies
 wayland_dep = dependency('wayland-client')
 # gtkmm_dep = dependency('gtkmm-3.0')
 jsoncpp_dep = dependency('jsoncpp')
+
 wayland_scanner_dep = find_program('wayland-scanner')
 wlr_protocols_dep = dependency('wlr-protocols')
 
@@ -39,12 +46,17 @@ ext_toplevel_public_code = custom_target(
   build_by_default: true
 )
 
-add_project_arguments(['-DWLR_USE_UNSTABLE'], language: ['cpp', 'c'])
+add_project_arguments(['-DWLR_USE_UNSTABLE'], language: ['c'])
 
 # Executable
 executable('wlr-apps',
+
+  ['src/wlr-apps.c', ext_toplevel_public_code, ext_toplevel_client_header],
+  dependencies : [wayland_dep, wlr_protocols_dep],
+
   [sources, ext_toplevel_public_code, ext_toplevel_client_header],
   dependencies : [wayland_dep, jsoncpp_dep, wlr_protocols_dep],
+
   install : true,
   include_directories : inc,
   build_by_default: true
