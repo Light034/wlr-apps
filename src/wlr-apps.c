@@ -98,6 +98,7 @@ struct toplevel_info *find_info_by_id(struct toplevel_list *list, uint32_t id) {
 static const uint32_t no_parent = (uint32_t)-1;
 static uint32_t pref_output_id = UINT32_MAX;
 bool json_out = false;
+bool sort_out = false;
 static void update_toplevel_info_state(struct toplevel_v1 *toplevel);
 
 // ---- Print Functions ----
@@ -230,7 +231,24 @@ void print_json_string(const char *str) {
   printf("\"");
 }
 
+int compare_toplevel_info(const void *a, const void *b){
+  const struct toplevel_info *info_a = (const struct toplevel_info *)a;
+  const struct toplevel_info *info_b = (const struct toplevel_info *)b;
+
+  if (info_a->tl_id < info_b->tl_id){
+    return -1;
+  } else if (info_a->tl_id > info_b->tl_id) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 void print_toplevel_json_array(void) {
+
+  if (global_info_list.count > 0 && sort_out) {
+    qsort(global_info_list.items, global_info_list.count, sizeof(struct toplevel_info), compare_toplevel_info);
+  }
 
   printf("[");
 
@@ -606,7 +624,7 @@ void handle_event(int client_fd, const char *event_data) {
     return;
   }
 
-  if (strlen(event_data) < 3 || event_data[1] != ' ') {
+  if ((strlen(event_data) < 3 && event_data[0] != 'q') || (event_data[1] != ' ' && event_data[0] != 'q')) {
     fprintf(stderr,
             "Invalid event data format from client %d: '%s'. Expected 'opt "
             "<id>'.\n",
@@ -640,6 +658,13 @@ void handle_event(int client_fd, const char *event_data) {
   }
 
   switch (command_char) {
+  case 'q':
+    if (sort_out) {
+      sort_out = false;
+    } else {
+      sort_out = true;
+    }
+    break;
   case 'f':
     focus_id = window_id;
     break;
@@ -724,6 +749,9 @@ int main(int argc, char **argv) {
 
   while ((c = getopt(argc, argv, "f:a:u:i:r:c:s:S:mo:h:mjx")) != -1) {
     switch (c) {
+    case 'q':
+      sort_out = true;
+      break;
     case 'f':
       focus_id = atoi(optarg);
       break;
@@ -805,7 +833,7 @@ int main(int argc, char **argv) {
       wl_display_disconnect(global_display);
       return EXIT_FAILURE;
     }
-    printf("Wayland initial roundtrip complete.\n");
+    //printf("Wayland initial roundtrip complete.\n");
 
     // Check if toplevel_manager is available after the roundtrip
     if (toplevel_manager == NULL) {
@@ -825,7 +853,7 @@ int main(int argc, char **argv) {
 
       return EXIT_FAILURE;
     }
-    printf("Wayland second roundtrip complete (toplevel details loaded).\n");
+    //printf("Wayland second roundtrip complete (toplevel details loaded).\n");
 
     listen_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (listen_socket == -1) {
