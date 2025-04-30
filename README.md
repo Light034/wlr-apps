@@ -30,9 +30,10 @@ Inside the directory `examples` you can find a simple **eww** widget that uses t
 ## To Do: 
 - [x] Display more toplevel states beyond just `active`, such as `maximized`, `minimized`, `fullscreen`, etc.
 - [ ] Sorting: Allow sorting of toplevel output by different criteria.
-- [x] More Robust Error Handling:  Improve error handling, right now its almost non-existent.
+- [x] Handle errors correctly rather than segfaulting.
 - [ ] Testing on other compositors. (Please let me know if it doesnt work for your set-up).
 - [x] Implement window management so that you can activate, maximize, minimize, and fullscreen using this program.
+- [ ] Check on what output the toplevel is located at and print that information out. (Useful for multi screen set-ups)
 #
 
 Contributions, bug reports, and pull requests are very welcomed.
@@ -51,4 +52,4 @@ ninja -C build
 
 ## Known bugs:
   * The app_id returned by wayland depends on compositor, most compositors supporting this protocol return the `.desktop` file name without the `.desktop`. Implementing this in `eww` like in the example provided causes some apps to not have any icon present. This is a bug with how `-gtk-icontheme()` works and not with this program. The solution would be to add gtk support and a function to check if the `app_id` returns an icon, if not then the app would manually search for the icon path. However, this is outside the scope of this program and not planned.
-  * When launched in client mode the current logic doesn't allow for `<output_id>` to be parsed, meaning requesting fullscreen doesn't work when working in server/client mode. Since I have no real need to request fullscreen of a toplevel through this program (my compositor already has a shortcut for this) I decided to release it like this. If anyone needs this feature please open an issue and I'll modify the logic to allow this, contributions for this feature are welcome as well.
+  * When launched in client mode the current logic doesn't allow for `<output_id>` to be parsed, meaning requesting fullscreen doesn't let you select on which output you wish to fullscreen the toplevel. Right now it fullscreens on the active output so you can move the window to the output you wish to focus. Since I don't need this feature on client/server mode I didn't implement the extra parsing of the output_id. If you would like this to be added please let me know through an issue and I'll work to fix it.
