@@ -747,7 +747,7 @@ int main(int argc, char **argv) {
     fds[i].fd = -1;
   }
 
-  while ((c = getopt(argc, argv, "f:a:u:i:r:c:s:S:mo:h:mjx")) != -1) {
+  while ((c = getopt(argc, argv, "f:a:u:i:r:c:s:S:mo:h:mjqx")) != -1) {
     switch (c) {
     case 'q':
       sort_out = true;
