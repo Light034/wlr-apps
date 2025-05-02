@@ -24,16 +24,23 @@ Inside the directory `examples` you can find a simple **eww** widget that uses t
   * `-r <id>` Requests toplevel to restore(unminimize).
   * `-c <id>` Requests toplevel to close.
   * `-x "<opt> <id>"` Launches the program in client mode and sends an event to the main instance for it to perform an action. The `<opt>` follows the same convention as the normal `[OPTIONS]` but without the `-`, it needs to be only 1 letter and the id. Make sure to surround the option and id in double qoutes for the server to detect it.
+  * `-q <type>` Allows you to sort out the output by id (how recent the app was open) and the app_id (grouping multiple windows of the same app together). Allows you to sort by ascending or descending order.
+    * `0` Disable sorting
+    * `1` Sort by id in ascending order (Oldest to newest).
+    * `2` Sort by id in descending order (Newest to oldest).
+    * `3` Sort by app_id in ascending order (A -> Z).
+    * `4` Sort by app_id in descending order (Z -> A).
   * `-h` Prints the help message and quit.
 
 
 ## To Do: 
 - [x] Display more toplevel states beyond just `active`, such as `maximized`, `minimized`, `fullscreen`, etc.
-- [ ] Sorting: Allow sorting of toplevel output by different criteria.
+- [x] Sorting: Allow sorting of toplevel output by different criteria.
 - [x] Handle errors correctly rather than segfaulting.
 - [ ] Testing on other compositors. (Please let me know if it doesnt work for your set-up).
 - [x] Implement window management so that you can activate, maximize, minimize, and fullscreen using this program.
 - [ ] Check on what output the toplevel is located at and print that information out. (Useful for multi screen set-ups)
+- [ ] Add ability to group apps into a single app_id to allow multiple windows of the same app to be grouped together.
 #
 
 Contributions, bug reports, and pull requests are very welcomed.
@@ -49,6 +56,14 @@ To build this program just clone this repository and run:
 meson setup build
 ninja -C build
 ```
+
+## Example:
+* Launch app in continous mode with json and sorting enabled by id (Oldest to newest).
+  *  `wlr-apps -mjq 1`
+* Send event to focus toplevel with id 1.
+  * `wlr-apps -x "f 1"`
+* Send event to switch sorting mode to app_id in descending order.
+ * `wlr-apps -x "q 4`
 
 ## Known bugs:
   * The app_id returned by wayland depends on compositor, most compositors supporting this protocol return the `.desktop` file name without the `.desktop`. Implementing this in `eww` like in the example provided causes some apps to not have any icon present. This is a bug with how `-gtk-icontheme()` works and not with this program. The solution would be to add gtk support and a function to check if the `app_id` returns an icon, if not then the app would manually search for the icon path. However, this is outside the scope of this program and not planned.
