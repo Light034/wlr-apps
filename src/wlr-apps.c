@@ -98,6 +98,8 @@ struct toplevel_info *find_info_by_id(struct toplevel_list *list, uint32_t id) {
 static const uint32_t no_parent = (uint32_t)-1;
 static uint32_t pref_output_id = UINT32_MAX;
 bool json_out = false;
+bool sort_out = false;
+int sort_type = -1;
 static void update_toplevel_info_state(struct toplevel_v1 *toplevel);
 
 // ---- Print Functions ----
@@ -117,6 +119,15 @@ static void print_help(void) {
       "  -i <id>         minimize\n"
       "  -r <id>         restore(unminimize)\n"
       "  -c <id>         close\n"
+      "  -q <type>       Sort output, this will ensure the order of the toplevels doesn't change\n"
+      "                  between updates, specially when removing toplevels.\n"
+      "                  <type> is the way to sort the outputs, can't be left empty.\n"
+      "                  Available sorting options:\n"
+      "                   \"0\" Turn sorting off.\n"
+      "                   \"1\" default option, sort by id in ascending order\n"
+      "                   \"2\" Sort by id inn descending order.\n"
+      "                   \"3\" Sort by app_id in ascending order.\n"
+      "                   \"4\" Sort by app_id in descending order.\n"
       "  -m              continuously print changes to the list of opened toplevels\n"
       "                  Can be used together with some of the previous options.\n"
       "  -x              Launch instance in client mode, sending an event to the main\n"
@@ -129,6 +140,7 @@ static void print_help(void) {
       "  |                \"i <id>\" (minimize)\n"
       "  |                \"r <id>\" (restore)\n"
       "  |                \"c <id>\" (close)\n"
+      "  |                \"q\" (toggle sorting on/off)\n"
       "                  Example: wlr-apps -x \"close <id>\".\n"
       "  -j              Print the output in json format, this can used alone "
       "                  to print\n"
@@ -230,7 +242,48 @@ void print_json_string(const char *str) {
   printf("\"");
 }
 
+int compare_toplevel_info(const void *a, const void *b){
+  const struct toplevel_info *info_a = (const struct toplevel_info *)a;
+  const struct toplevel_info *info_b = (const struct toplevel_info *)b;
+
+  // Sort based on the sort_type that's currently enabled. 
+  // This could probably be faster but they are simple int comparisons so I don't think the performance penalty of this
+  // Nested if's statements is important.
+  if (sort_type == 1 || sort_type == 2){
+    if (info_a->tl_id < info_b->tl_id){
+      if (sort_type == 1){
+        return -1;
+      } else return 1;
+    } else if (info_a->tl_id > info_b->tl_id) {
+      if (sort_type == 1){
+        return 1;
+      } else return -1;
+    } else {
+      return 0;
+    }
+  } else if (sort_type == 3 || sort_type == 4) {
+    if (info_a->tl_app_id[0] < info_b->tl_app_id[0]){
+      if (sort_type == 4) {
+        return 1;
+      } else return -1;
+    } else if (info_a->tl_app_id[0] > info_b->tl_app_id[0]){
+      if (sort_type == 4){
+        return -1;
+      } else return 1;
+    } else {
+      return 0;
+    }
+
+  } 
+  // Just so that the compiler doesn't complain.
+  else return 0;
+}
+
 void print_toplevel_json_array(void) {
+
+  if (global_info_list.count > 0 && sort_out) {
+    qsort(global_info_list.items, global_info_list.count, sizeof(struct toplevel_info), compare_toplevel_info);
+  }
 
   printf("[");
 
@@ -381,6 +434,7 @@ static void toplevel_handle_output_enter(
      struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel,
     struct wl_output *output) {
    struct toplevel_v1 *toplevel = data;
+  //print_toplevel(toplevel, false);
   printf(" enter output %u\n",
          (uint32_t)(size_t)wl_output_get_user_data(output));
 }
@@ -389,13 +443,10 @@ static void toplevel_handle_output_leave(
     void *data,
      struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel,
     struct wl_output *output) {
-  struct toplevel_v1 *toplevel = data;
-
-  if (!json_out) {
-    print_toplevel(toplevel, false);
-  }
-
-  printf(" leave output %u\n",
+      struct toplevel_v1 *toplevel = data;
+      print_toplevel(toplevel, false);
+  
+      printf(" leave output %u\n",
          (uint32_t)(size_t)wl_output_get_user_data(output));
 }
 
@@ -606,7 +657,7 @@ void handle_event(int client_fd, const char *event_data) {
     return;
   }
 
-  if (strlen(event_data) < 3 || event_data[1] != ' ') {
+  if ((strlen(event_data) < 3) || (event_data[1] != ' ')) {
     fprintf(stderr,
             "Invalid event data format from client %d: '%s'. Expected 'opt "
             "<id>'.\n",
@@ -640,6 +691,14 @@ void handle_event(int client_fd, const char *event_data) {
   }
 
   switch (command_char) {
+  case 'q':
+    if (window_id == 0) {
+      sort_out = false;
+    } else {
+      sort_out = true;
+      sort_type = window_id;
+    }
+    break;
   case 'f':
     focus_id = window_id;
     break;
@@ -722,8 +781,12 @@ int main(int argc, char **argv) {
     fds[i].fd = -1;
   }
 
-  while ((c = getopt(argc, argv, "f:a:u:i:r:c:s:S:mo:h:mjx")) != -1) {
+  while ((c = getopt(argc, argv, "f:a:u:i:r:c:s:S:mo:mjq:h:mjx")) != -1) {
     switch (c) {
+    case 'q':
+      sort_out = true;
+      sort_type = atoi(optarg);
+      break;
     case 'f':
       focus_id = atoi(optarg);
       break;
@@ -760,7 +823,7 @@ int main(int argc, char **argv) {
         event_message = argv[optind];
         client_mode = 1; // Client mode
       } else {
-        fprintf(stderr, "Option -x requires an argument, see -h for more.\n");
+        fprintf(stderr, "Option -x requires an argument\n");
         print_help();
         return EXIT_FAILURE;
       }
@@ -805,7 +868,7 @@ int main(int argc, char **argv) {
       wl_display_disconnect(global_display);
       return EXIT_FAILURE;
     }
-    printf("Wayland initial roundtrip complete.\n");
+    //printf("Wayland initial roundtrip complete.\n");
 
     // Check if toplevel_manager is available after the roundtrip
     if (toplevel_manager == NULL) {
@@ -825,7 +888,7 @@ int main(int argc, char **argv) {
 
       return EXIT_FAILURE;
     }
-    printf("Wayland second roundtrip complete (toplevel details loaded).\n");
+    //printf("Wayland second roundtrip complete (toplevel details loaded).\n");
 
     listen_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (listen_socket == -1) {
@@ -1058,6 +1121,7 @@ int main(int argc, char **argv) {
     printf("Sent Message: %s\n", event_message);
 
   } else {
+    // Default single run.
     struct wl_display *display = wl_display_connect(NULL);
     if (display == NULL) {
       fprintf(stderr, "Failed to create display\n");
