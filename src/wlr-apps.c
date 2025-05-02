@@ -402,6 +402,7 @@ static void toplevel_handle_output_enter(
      struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel,
     struct wl_output *output) {
    struct toplevel_v1 *toplevel = data;
+  //print_toplevel(toplevel, false);
   printf(" enter output %u\n",
          (uint32_t)(size_t)wl_output_get_user_data(output));
 }
@@ -410,13 +411,10 @@ static void toplevel_handle_output_leave(
     void *data,
      struct zwlr_foreign_toplevel_handle_v1 *zwlr_toplevel,
     struct wl_output *output) {
-  struct toplevel_v1 *toplevel = data;
-
-  if (!json_out) {
-    print_toplevel(toplevel, false);
-  }
-
-  printf(" leave output %u\n",
+      struct toplevel_v1 *toplevel = data;
+      print_toplevel(toplevel, false);
+  
+      printf(" leave output %u\n",
          (uint32_t)(size_t)wl_output_get_user_data(output));
 }
 
