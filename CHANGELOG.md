@@ -2,6 +2,11 @@
 
 All changes will be documented here.
 
+## 0.3 (02.05.2025)
+
+### Changes
+Added the option to sort the output based on id or app_id, this fixes the behaviour where some apps would randomly change place when some toplevels are removed.
+
 ## 0.2 (29.04.2025)
 
 ### Changes
