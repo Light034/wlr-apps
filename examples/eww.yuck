@@ -1,4 +1,4 @@
-(deflisten wlr_apps :initial "[]" "$PATH_TO_YOUR_PROGRAM/wlr-apps --follow")
+(deflisten wlr_apps :initial "[]" "$PATH_TO_YOUR_PROGRAM/wlr-apps -mj")
 
 (defwindow bar []
     :monitor "0"
@@ -40,18 +40,9 @@
                 :class "app_item ${app.active == true ? "active" : ""}" 
                 ;; Functionality to focus app on click, to be expanded.
                 :onclick "wlr-apps -x \"f ${app.id}\""
-                ;; Box that holds the css for displaying the icon, it uses built in gtk css from eww.
-                ;; Some apps might not display the icon.
-                ;; You can read more in https://docs.gtk.org/gtk3/css-overview.html.
-                (box :orientation "h" :class "app_image" :css ".app_image {
-                    background-image: -gtk-icontheme('${app.app_id}');
-                    background-repeat: no-repeat;
-                    background-size: cover;
-                    background-position: center;
-                    min-height: 0rem;
-                    min-width: 2rem;
-                    border-radius: 100%;
-                    }"
+                ;; This box holds the icons using the built in image functionality from eww.
+                ;; This is better than -gtk-icontheme since image actually returns a placeholder when no icon is found.
+                (box :orientation "h" :class "app_image" :css (image :icon "${app.app_id}" :icon-size "dnd")
                 )
             )
         )
