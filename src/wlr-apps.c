@@ -342,6 +342,22 @@ static void copy_state(struct toplevel_state *current,
   }
 
   if (pending->app_id) {
+    /*
+    This implementation is kinda dumb but it's the best I could come up with. Basically the -gtk-icontheme doesn't match upper and lowercase, meaning that
+    if your app_id is, for example, "org.xfce.Thunar" but the icon is found under "org.xfce.thunar" it will return null and empty icon. So we need to convert it to
+    lowercase first in order for gtk to return a valid icon. HOWEVER, the same thing occurs the other way arround, for example, "org.gnome.Calculator" only matches with the
+    uppercase, so if we convert ALL app_ids to lowercase this one won't match. From testing I think only gnome has the icon with upper case rather than lowecase.
+    To make things worse this seems to only happen with "org.something.something" app_ids, any other app in my testing matches correctly regardless of upper or lowercase.
+    I couldn't look deeper into how gtk handles this but could be a bug.
+    */
+    char gnome[] = "gnome";
+    char *res = strstr(pending->app_id, gnome);
+    // If the app_id doesn't contain "gnome" we convert everything to lowercase. if it does we leave it as it is.
+    if (res == NULL) {
+      for (int i = 0; i < strlen(pending->app_id); i++){
+        pending->app_id[i] = tolower(pending->app_id[i]);
+      }
+    }
     current->app_id = pending->app_id;
     pending->app_id = NULL;
   }
